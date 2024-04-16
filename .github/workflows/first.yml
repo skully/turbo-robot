@@ -1,19 +1,51 @@
 name: first workflow
+
+env:
+  WORKFLOW_VAR: "This variable is declaredc at the workflow level"
+
 on:
   workflow_dispatch:
+  
 jobs:
   firstjob:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    name: this is the first job
     steps:
       - name: firstJob script
         shell: bash
-        run: echo Hello World! This is the first job
+        run: echo Hello World!! this is the first job!!
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Print to Log
+        id: print-to-log
+        uses: actions/hello-world-javascript-action@main
+        with:
+          who-to-greet: ${{ github.actor }}
+      - name: time
+        run: |
+          echo "The time of the greeting was at: ${{ steps.print-to-log.outputs.time }}"
 
-  secondjob:
+
+  secondJob:
     runs-on: ubuntu-latest
+    needs: firstjob
+    env:
+      JOB_VAR: "This is a job variable"
     steps:
       - name: secondJob script
         shell: bash
         run: |
           echo this is the second job
           echo and this is a multi-line script
+      - name: environment variables
+        env:
+          STEP_VAR: "This variable is declared at the step level"
+        run: |
+          echo $WORKFLOW_VAR
+          echo $JOB_VAR
+          echo $STEP_VAR
+          echo "The following is a secret: ${{ secrets.SOME_SECRET }}"
+          echo "The following are environment variables"
+          echo $GITHUB_ACTOR
+          echo $GITHUB_JOB
+          echo $GITHUB_REF
